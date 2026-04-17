@@ -1,4 +1,3 @@
-// Selectors
 const authTokenInput = document.getElementById('auth-token');
 const appInterface = document.getElementById('app-interface');
 const branchTabs = document.querySelectorAll('.tab-btn');
@@ -11,6 +10,11 @@ const saveSettingsBtn = document.getElementById('save-settings');
 const licenseInput = document.getElementById('license');
 const wdbApiInput = document.getElementById('wdb-api');
 const notificationToast = document.getElementById('notification-toast');
+const currentVersionSpan = document.getElementById('current-version');
+const updateBanner = document.getElementById('update-banner');
+const updateLink = document.getElementById('update-link');
+
+const GITHUB_REPO = 'webdicebot/extension';
 
 let apiData = [];
 let currentBranch = 'stable';
@@ -33,6 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     settingsSection.open = false;
   }
 
+  // Show current version
+  const manifest = chrome.runtime.getManifest();
+  currentVersionSpan.textContent = manifest.version;
+
   // Always try to fetch fresh data on load if token exists
   if (data.auth_token) {
     fetchApiData();
@@ -43,7 +51,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderFilters();
     updateList();
   }
+
+  // Check for updates from GitHub
+  checkUpdates();
 });
+
+async function checkUpdates() {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const latestVersion = data.tag_name.replace('v', '');
+    const currentVersion = chrome.runtime.getManifest().version;
+
+    if (isNewerVersion(currentVersion, latestVersion)) {
+      updateBanner.classList.remove('hidden');
+      updateLink.href = data.html_url;
+      console.log(`[Web DiceBot] New version available: ${latestVersion}`);
+    }
+  } catch (err) {
+    console.error('[Web DiceBot] Check update failed:', err);
+  }
+}
+
+function isNewerVersion(oldVer, newVer) {
+  const oldParts = oldVer.split('.').map(Number);
+  const newParts = newVer.split('.').map(Number);
+  for (let i = 0; i < Math.max(oldParts.length, newParts.length); i++) {
+    const a = oldParts[i] || 0;
+    const b = newParts[i] || 0;
+    if (a < b) return true;
+    if (a > b) return false;
+  }
+  return false;
+}
 
 async function fetchApiData() {
   const token = authTokenInput.value.trim();
