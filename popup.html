@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebDiceBot Control</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <div class="logo-stack">
+          <span class="since-badge">Since 2019</span>
+          <h1>Web DiceBot <span>Installer</span></h1>
+          <span class="product-of">Product of webdicebot.net</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div id="app-interface" class="hidden">
+        <nav class="tabs">
+          <button class="tab-btn active" data-branch="stable">Stable</button>
+          <button class="tab-btn" data-branch="beta">Beta</button>
+        </nav>
+
+        <div class="filters-container">
+          <div id="game-filters" class="chips-list">
+          </div>
+        </div>
+
+        <section class="selector-section">
+          <select id="installer-select">
+            <option value="">Select installer</option>
+          </select>
+        </section>
+
+        <section id="preview-section" class="preview-section hidden">
+          <pre id="script-preview"></pre>
+          <div class="action-buttons">
+            <button id="inject-now" class="btn-primary">Install</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="settings-group">
+        <details>
+          <summary>Settings</summary>
+          <div class="input-field">
+            <label for="auth-token">Web DiceBot API Token</label>
+            <input type="password" id="auth-token" placeholder="Paste your token here">
+          </div>
+          <div class="input-field">
+            <label for="license">License</label>
+            <input type="text" id="license" placeholder="Paste your license here">
+          </div>
+          <div class="input-field" hidden>
+            <label for="wdb-api">Base API URL</label>
+            <input type="text" id="wdb-api" placeholder="https://bot.webdicebot.net">
+          </div>
+          <div class="settings-actions">
+            <button id="save-settings" class="btn-secondary">SAVE</button>
+          </div>
+        </details>
+      </section>
+
+      <div id="notification-toast" class="notification-toast hidden"></div>
+    </main>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>
