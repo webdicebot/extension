@@ -273,3 +273,4 @@ saveSettingsBtn.addEventListener('click', async () => {
   saveSettingsBtn.textContent = '✅ SAVED';
   setTimeout(() => saveSettingsBtn.textContent = 'SAVE', 2000);
 });
+

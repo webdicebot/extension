@@ -28,7 +28,7 @@
 
 body {
   width: 100%;
-  min-width: 320px;
+  min-width: 350px;
   background-color: var(--bg-dark);
   color: var(--text-white);
   font-family: var(--font-main);
