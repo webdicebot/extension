@@ -22,7 +22,26 @@ let currentGameType = 'all';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license']);
+  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license', 'active_branch', 'custom_scripts', 'active_game_type']);
+
+  if (data.active_game_type) {
+    currentGameType = data.active_game_type;
+  }
+
+  if (data.active_branch) {
+    currentBranch = data.active_branch;
+    branchTabs.forEach(t => {
+      if (t.dataset.branch === currentBranch) t.classList.add('active');
+      else t.classList.remove('active');
+    });
+  }
+
+  toggleView(currentBranch);
+
+  if (data.custom_scripts) {
+    customScripts = data.custom_scripts;
+  }
+  renderScripts();
 
   if (data.auth_token) authTokenInput.value = data.auth_token;
   if (data.license) licenseInput.value = data.license;
@@ -143,6 +162,7 @@ function renderFilters() {
     chip.textContent = type.charAt(0).toUpperCase() + type.slice(1);
     chip.addEventListener('click', () => {
       currentGameType = type;
+      chrome.storage.local.set({ active_game_type: currentGameType });
       renderFilters();
       updateList();
     });
@@ -228,9 +248,27 @@ branchTabs.forEach(tab => {
     branchTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentBranch = tab.dataset.branch;
-    updateList();
+    chrome.storage.local.set({ active_branch: currentBranch });
+    toggleView(currentBranch);
   });
 });
+
+function toggleView(branch) {
+  const officialView = document.getElementById('official-view');
+  const customScriptsView = document.getElementById('custom-scripts-view');
+  const settingsGroup = document.querySelector('.settings-group');
+
+  if (branch === 'custom') {
+    if (officialView) officialView.classList.add('hidden');
+    if (customScriptsView) customScriptsView.classList.remove('hidden');
+    if (settingsGroup) settingsGroup.classList.add('hidden');
+  } else {
+    if (officialView) officialView.classList.remove('hidden');
+    if (customScriptsView) customScriptsView.classList.add('hidden');
+    if (settingsGroup) settingsGroup.classList.remove('hidden');
+    updateList();
+  }
+}
 
 installerSelect.addEventListener('change', () => {
   const selected = apiData.find(i => i.CASINO_GAME === installerSelect.value);
@@ -315,4 +353,229 @@ saveSettingsBtn.addEventListener('click', async () => {
   saveSettingsBtn.textContent = '✅ SAVED';
   setTimeout(() => saveSettingsBtn.textContent = 'SAVE', 2000);
 });
+
+// --- Scripts Manager Logic ---
+const smAddBtn = document.getElementById('sm-add');
+const smImportBtn = document.getElementById('sm-import');
+const smExportBtn = document.getElementById('sm-export');
+const smFileInput = document.getElementById('sm-file-input');
+const smList = document.getElementById('sm-list');
+const smEditor = document.getElementById('sm-editor');
+const smName = document.getElementById('sm-name');
+const smContent = document.getElementById('sm-content');
+const smSaveBtn = document.getElementById('sm-save');
+const smCancelBtn = document.getElementById('sm-cancel');
+
+let customScripts = [];
+let editingScriptId = null;
+
+function renderScripts() {
+  if (!smList) return;
+  smList.innerHTML = '';
+  customScripts.forEach(script => {
+    const li = document.createElement('li');
+    li.draggable = true;
+    li.dataset.id = script.id;
+
+    li.addEventListener('dragstart', () => li.classList.add('dragging'));
+    li.addEventListener('dragend', () => li.classList.remove('dragging'));
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'sm-list-name';
+    nameSpan.textContent = script.name;
+    nameSpan.title = "Click to put this script";
+    nameSpan.addEventListener('click', () => runCustomScript(script));
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'sm-list-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'sm-list-btn';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => openEditor(script));
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'sm-list-btn';
+    delBtn.textContent = 'Del';
+    delBtn.addEventListener('click', () => {
+      if (confirm(`Delete script "${script.name}"?`)) {
+        customScripts = customScripts.filter(s => s.id !== script.id);
+        saveScripts();
+      }
+    });
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(delBtn);
+
+    li.appendChild(nameSpan);
+    li.appendChild(actionsDiv);
+    smList.appendChild(li);
+  });
+}
+
+function openEditor(script = null) {
+  smEditor.classList.remove('hidden');
+  if (script) {
+    editingScriptId = script.id;
+    smName.value = script.name;
+    smContent.value = script.content;
+  } else {
+    editingScriptId = null;
+    smName.value = '';
+    smContent.value = '';
+  }
+}
+
+function closeEditor() {
+  smEditor.classList.add('hidden');
+  editingScriptId = null;
+}
+
+async function saveScripts() {
+  await chrome.storage.local.set({ custom_scripts: customScripts });
+  renderScripts();
+}
+
+if (smList) {
+  smList.addEventListener('dragover', e => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(smList, e.clientY);
+    const draggable = document.querySelector('.dragging');
+    if (draggable) {
+      if (afterElement == null) smList.appendChild(draggable);
+      else smList.insertBefore(draggable, afterElement);
+    }
+  });
+
+  smList.addEventListener('drop', e => {
+    e.preventDefault();
+    const newOrderIds = Array.from(smList.querySelectorAll('li')).map(li => li.dataset.id);
+    customScripts.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+    chrome.storage.local.set({ custom_scripts: customScripts });
+  });
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+if (smAddBtn) smAddBtn.addEventListener('click', () => openEditor());
+if (smCancelBtn) smCancelBtn.addEventListener('click', closeEditor);
+
+if (smSaveBtn) {
+  smSaveBtn.addEventListener('click', () => {
+    const name = smName.value.trim();
+    const content = smContent.value.trim();
+    if (!name || !content) {
+      showToast('Name and content are required');
+      return;
+    }
+
+    if (editingScriptId) {
+      const script = customScripts.find(s => s.id === editingScriptId);
+      if (script) {
+        script.name = name;
+        script.content = content;
+      }
+    } else {
+      customScripts.push({
+        id: Date.now().toString(),
+        name,
+        content
+      });
+    }
+
+    saveScripts();
+    closeEditor();
+    showToast('Script saved');
+  });
+}
+
+if (smExportBtn) {
+  smExportBtn.addEventListener('click', () => {
+    if (customScripts.length === 0) {
+      showToast('No scripts to export');
+      return;
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(customScripts, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "webdicebot_scripts.json");
+    dlAnchorElem.click();
+  });
+}
+
+if (smImportBtn) smImportBtn.addEventListener('click', () => smFileInput.click());
+
+if (smFileInput) {
+  smFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (Array.isArray(imported)) {
+          let importedCount = 0;
+          imported.forEach(imp => {
+            if (imp.id && imp.name && imp.content) {
+              if (!customScripts.find(s => s.id === imp.id)) {
+                customScripts.push(imp);
+                importedCount++;
+              }
+            }
+          });
+          saveScripts();
+          showToast(`Imported ${importedCount} scripts`);
+        }
+      } catch (err) {
+        showToast('Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+    smFileInput.value = '';
+  });
+}
+
+async function runCustomScript(script) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return;
+
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    world: 'MAIN',
+    func: (content) => {
+      try {
+        if (window.mode === 'lua') {
+          if (window.luaEditor) {
+            window.luaEditor.setValue(content);
+          } else {
+            alert("luaEditor not found on the page.");
+          }
+        } else if (window.mode === 'js') {
+          if (window.jsEditor) {
+            window.jsEditor.setValue(content);
+          } else {
+            alert("jsEditor not found on the page.");
+          }
+        } else {
+          alert("Cannot find 'mode' variable (expected 'lua' or 'js'). Ensure the bot editor is open.");
+        }
+      } catch (e) {
+        alert("Failed to load script into editor: " + e.message);
+      }
+    },
+    args: [script.content]
+  });
+  showToast(`🚀 ${script.name}`);
+}
 

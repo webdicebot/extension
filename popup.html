@@ -26,7 +26,10 @@
         <nav class="tabs">
           <button class="tab-btn active" data-branch="stable">Stable</button>
           <button class="tab-btn" data-branch="beta">Beta</button>
+          <button class="tab-btn" data-branch="custom">Scripts</button>
         </nav>
+
+        <div id="official-view">
 
         <div class="filters-container">
           <div id="game-filters" class="chips-list">
@@ -44,10 +47,36 @@
           <div class="action-buttons">
             <button id="inject-now" class="btn-primary">Install</button>
           </div>
-        </section>
+          </section>
+        </div>
+
+        <div id="custom-scripts-view" class="hidden">
+          <div class="sm-container">
+            <div class="sm-actions">
+              <button id="sm-add" class="btn-secondary">New</button>
+              <button id="sm-import" class="btn-secondary">Import</button>
+              <button id="sm-export" class="btn-secondary">Export</button>
+              <input type="file" id="sm-file-input" accept=".json" hidden>
+            </div>
+            <ul id="sm-list" class="sm-list"></ul>
+            <div id="sm-editor" class="sm-editor hidden">
+              <div class="input-field">
+                <input type="text" id="sm-name" placeholder="Script Name">
+              </div>
+              <div class="input-field">
+                <textarea id="sm-content" placeholder="Paste your script content here" rows="5"></textarea>
+              </div>
+              <div class="sm-editor-actions">
+                <button id="sm-save" class="btn-primary">Save</button>
+                <button id="sm-cancel" class="btn-secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <section class="settings-group">
+
         <details>
           <summary>Settings</summary>
           <div class="input-field">
