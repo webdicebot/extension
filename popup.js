@@ -14,6 +14,10 @@ const currentVersionSpan = document.getElementById('current-version');
 const updateBanner = document.getElementById('update-banner');
 const updateLink = document.getElementById('update-link');
 
+// CSP & Domain Elements
+const cspToggle = document.getElementById('csp-toggle');
+const currentSiteDomainSpan = document.getElementById('current-site-domain');
+
 const GITHUB_REPO = 'webdicebot/extension';
 
 let apiData = [];
@@ -22,10 +26,39 @@ let currentGameType = 'all';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license', 'active_branch', 'custom_scripts', 'active_game_type']);
+  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license', 'active_branch', 'custom_scripts', 'active_game_type', 'csp_disabled_domains']);
 
   if (data.active_game_type) {
     currentGameType = data.active_game_type;
+  }
+
+  // Handle CSP Toggle and current domain
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab && tab.url) {
+    try {
+      const url = new URL(tab.url);
+      const domain = url.hostname;
+      if (currentSiteDomainSpan) currentSiteDomainSpan.textContent = domain;
+
+      const disabledDomains = data.csp_disabled_domains || [];
+      if (cspToggle) {
+        cspToggle.checked = disabledDomains.includes(domain);
+        cspToggle.addEventListener('change', async () => {
+          const currentData = await chrome.storage.local.get('csp_disabled_domains');
+          let domains = currentData.csp_disabled_domains || [];
+          if (cspToggle.checked) {
+            if (!domains.includes(domain)) domains.push(domain);
+          } else {
+            domains = domains.filter(d => d !== domain);
+          }
+          await chrome.storage.local.set({ csp_disabled_domains: domains });
+          showToast(`CSP Bypass ${cspToggle.checked ? 'Enabled' : 'Disabled'} for ${domain}`, 'success');
+        });
+      }
+    } catch (e) {
+      if (currentSiteDomainSpan) currentSiteDomainSpan.textContent = "Unknown";
+      if (cspToggle) cspToggle.disabled = true;
+    }
   }
 
   if (data.active_branch) {
@@ -142,8 +175,10 @@ function showInterface() {
   appInterface.classList.remove('hidden');
 }
 
-function showToast(message) {
+function showToast(message, type = '') {
   notificationToast.textContent = message;
+  notificationToast.className = 'notification-toast'; // Reset
+  if (type) notificationToast.classList.add(type);
   notificationToast.classList.remove('hidden');
 
   // Auto hide after 4 seconds
@@ -578,4 +613,3 @@ async function runCustomScript(script) {
   });
   showToast(`🚀 ${script.name}`);
 }
-
