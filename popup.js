@@ -16,7 +16,7 @@ const updateLink = document.getElementById('update-link');
 
 // CSP & Domain Elements
 const cspToggle = document.getElementById('csp-toggle');
-const currentSiteDomainSpan = document.getElementById('current-site-domain');
+const activeToggle = document.getElementById('active-toggle');
 
 const GITHUB_REPO = 'webdicebot/extension';
 
@@ -26,7 +26,7 @@ let currentGameType = 'all';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license', 'active_branch', 'custom_scripts', 'active_game_type', 'csp_disabled_domains']);
+  const data = await chrome.storage.local.get(['auth_token', 'api_data', 'wdb_api', 'license', 'active_branch', 'custom_scripts', 'active_game_type', 'csp_disabled_domains', 'always_active_domains']);
 
   if (data.active_game_type) {
     currentGameType = data.active_game_type;
@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const url = new URL(tab.url);
       const domain = url.hostname;
-      if (currentSiteDomainSpan) currentSiteDomainSpan.textContent = domain;
 
       const disabledDomains = data.csp_disabled_domains || [];
       if (cspToggle) {
@@ -52,11 +51,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             domains = domains.filter(d => d !== domain);
           }
           await chrome.storage.local.set({ csp_disabled_domains: domains });
-          showToast(`CSP Bypass ${cspToggle.checked ? 'Enabled' : 'Disabled'} for ${domain}`, 'success');
+          showToast(`CSP Bypass ${cspToggle.checked ? 'Enabled' : 'Disabled'} for ${domain} (Refresh page to apply)`, 'success');
+        });
+      }
+
+      // Handle Always Active Toggle
+      const activeDomains = data.always_active_domains || [];
+      if (activeToggle) {
+        activeToggle.checked = activeDomains.includes(domain);
+        activeToggle.addEventListener('change', async () => {
+          const currentData = await chrome.storage.local.get('always_active_domains');
+          let domains = currentData.always_active_domains || [];
+          if (activeToggle.checked) {
+            if (!domains.includes(domain)) domains.push(domain);
+          } else {
+            domains = domains.filter(d => d !== domain);
+          }
+          await chrome.storage.local.set({ always_active_domains: domains });
+          showToast(`Always Active ${activeToggle.checked ? 'Enabled' : 'Disabled'} for ${domain} (Refresh page to apply)`, 'success');
         });
       }
     } catch (e) {
-      if (currentSiteDomainSpan) currentSiteDomainSpan.textContent = "Unknown";
       if (cspToggle) cspToggle.disabled = true;
     }
   }

@@ -97,6 +97,9 @@ header {
   border-radius: 10px;
   border: 1px solid var(--glass-border);
   margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .control-item {
