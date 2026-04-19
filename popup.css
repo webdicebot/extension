@@ -16,8 +16,8 @@
   --text-dim: #94a3b8;
   --border-glow: rgba(0, 255, 195, 0.2);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-main: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
 * {
@@ -40,7 +40,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: radial-gradient(circle at top right, rgba(0, 255, 195, 0.05), transparent 60%);
+  background: radial-gradient(
+    circle at top right,
+    rgba(0, 255, 195, 0.05),
+    transparent 60%
+  );
 }
 
 /* Header & Logo */
@@ -97,6 +101,9 @@ header {
   border-radius: 10px;
   border: 1px solid var(--glass-border);
   margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .control-item {
@@ -121,7 +128,7 @@ header {
   color: var(--text-dim);
 }
 
-.control-info .control-domain{
+.control-info .control-domain {
   text-align: center;
 }
 
@@ -147,7 +154,7 @@ header {
   right: 0;
   bottom: 0;
   background-color: rgba(255, 255, 255, 0.1);
-  transition: .4s;
+  transition: 0.4s;
   border: 1px solid var(--glass-border);
 }
 
@@ -159,7 +166,7 @@ header {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
@@ -434,7 +441,7 @@ pre::-webkit-scrollbar-thumb {
 }
 
 .settings-group summary::after {
-  content: '→';
+  content: "→";
   transition: transform 0.3s;
 }
 
@@ -485,7 +492,11 @@ pre::-webkit-scrollbar-thumb {
 .update-banner {
   margin-top: 15px;
   padding: 10px;
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.2), rgba(0, 229, 255, 0.2));
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.2),
+    rgba(0, 229, 255, 0.2)
+  );
   border: 1px solid var(--accent-blue);
   border-radius: 8px;
   display: flex;
@@ -495,9 +506,15 @@ pre::-webkit-scrollbar-thumb {
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 229, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+  }
 }
 
 .update-msg {
