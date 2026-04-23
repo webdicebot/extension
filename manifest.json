@@ -31,5 +31,17 @@
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://bot.webdicebot.net/*",
+        "*://webdicebot.net/*",
+        "*://localhost/*",
+        "*://127.0.0.1/*"
+      ],
+      "js": ["bridge.js"],
+      "run_at": "document_end"
+    }
+  ]
 }

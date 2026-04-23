@@ -92,3 +92,33 @@ async function updateAlwaysActiveRules() {
     console.error("[Web DiceBot] Always Active Rules update failed:", err);
   }
 }
+
+// Handle messages from content scripts (bridge)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "installScript") {
+    const { script } = request;
+    chrome.storage.local.get(["custom_scripts"], (data) => {
+      let scripts = data.custom_scripts || [];
+      // Check if already exists by name
+      if (!scripts.find((s) => s.name === script.name)) {
+        scripts.push({
+          id: Date.now().toString(),
+          name: script.name,
+          content: script.content,
+        });
+        chrome.storage.local.set({ custom_scripts: scripts }, () => {
+          sendResponse({
+            success: true,
+            message: `Script "${script.name}" installed to extension!`,
+          });
+        });
+      } else {
+        sendResponse({
+          success: false,
+          message: `Script "${script.name}" is already in your extension.`,
+        });
+      }
+    });
+    return true; // Keep channel open for async response
+  }
+});

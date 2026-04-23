@@ -436,6 +436,14 @@ saveSettingsBtn.addEventListener("click", async () => {
   setTimeout(() => (saveSettingsBtn.textContent = "SAVE"), 2000);
 });
 
+// Refresh list if storage changes (e.g. from background script)
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.custom_scripts) {
+    customScripts = changes.custom_scripts.newValue || [];
+    renderScripts();
+  }
+});
+
 // --- Scripts Manager Logic ---
 const smAddBtn = document.getElementById("sm-add");
 const smImportBtn = document.getElementById("sm-import");
