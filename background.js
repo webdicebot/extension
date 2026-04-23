@@ -105,6 +105,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           id: Date.now().toString(),
           name: script.name,
           content: script.content,
+          language: script.language || "lua",
         });
         chrome.storage.local.set({ custom_scripts: scripts }, () => {
           sendResponse({

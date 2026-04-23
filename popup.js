@@ -452,6 +452,7 @@ const smFileInput = document.getElementById("sm-file-input");
 const smList = document.getElementById("sm-list");
 const smEditor = document.getElementById("sm-editor");
 const smName = document.getElementById("sm-name");
+const smLanguage = document.getElementById("sm-language");
 const smContent = document.getElementById("sm-content");
 const smSaveBtn = document.getElementById("sm-save");
 const smCancelBtn = document.getElementById("sm-cancel");
@@ -472,7 +473,13 @@ function renderScripts() {
 
     const nameSpan = document.createElement("span");
     nameSpan.className = "sm-list-name";
-    nameSpan.textContent = script.name;
+
+    let prefix = "";
+    if (script.language) {
+      prefix += `[${script.language === "javascript" ? "JS" : "LUA"}] `;
+    }
+
+    nameSpan.textContent = prefix + script.name;
     nameSpan.title = "Click to put this script";
     nameSpan.addEventListener("click", () => runCustomScript(script));
 
@@ -508,10 +515,12 @@ function openEditor(script = null) {
   if (script) {
     editingScriptId = script.id;
     smName.value = script.name;
+    smLanguage.value = script.language || "lua";
     smContent.value = script.content;
   } else {
     editingScriptId = null;
     smName.value = "";
+    smLanguage.value = "lua";
     smContent.value = "";
   }
 }
@@ -573,6 +582,7 @@ if (smCancelBtn) smCancelBtn.addEventListener("click", closeEditor);
 if (smSaveBtn) {
   smSaveBtn.addEventListener("click", () => {
     const name = smName.value.trim();
+    const language = smLanguage.value;
     const content = smContent.value.trim();
     if (!name || !content) {
       showToast("Name and content are required");
@@ -583,12 +593,14 @@ if (smSaveBtn) {
       const script = customScripts.find((s) => s.id === editingScriptId);
       if (script) {
         script.name = name;
+        script.language = language;
         script.content = content;
       }
     } else {
       customScripts.push({
         id: Date.now().toString(),
         name,
+        language,
         content,
       });
     }
@@ -661,18 +673,16 @@ async function runCustomScript(script) {
           if (window.luaEditor) {
             window.luaEditor.setValue(content);
           } else {
-            alert("luaEditor not found on the page.");
+            alert("Script box not found on the page.");
           }
         } else if (window.mode === "js") {
           if (window.jsEditor) {
             window.jsEditor.setValue(content);
           } else {
-            alert("jsEditor not found on the page.");
+            alert("Script box not found on the page.");
           }
         } else {
-          alert(
-            "Cannot find 'mode' variable (expected 'lua' or 'js'). Ensure the bot editor is open.",
-          );
+          alert("Web DiceBot is not running on this page.");
         }
       } catch (e) {
         alert("Failed to load script into editor: " + e.message);
