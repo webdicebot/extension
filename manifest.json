@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Web DiceBot Installer",
-  "version": "1.0.5",
-  "description": "Quick install Web DiceBot",
+  "version": "1.0.6",
+  "description": "Quick install Web DiceBot and more!",
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
@@ -34,12 +34,7 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "*://bot.webdicebot.net/*",
-        "*://webdicebot.net/*",
-        "*://localhost/*",
-        "*://127.0.0.1/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["bridge.js"],
       "run_at": "document_end"
     }
