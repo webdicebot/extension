@@ -104,6 +104,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Always show the interface so Scripts tab is always accessible
+  showInterface();
   toggleView(currentBranch);
 
   if (data.custom_scripts) {
@@ -116,9 +118,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (data.wdb_api) wdbApiInput.value = data.wdb_api;
   else wdbApiInput.value = "https://bot.webdicebot.net";
 
-  // Open settings automatically if credentials are missing
+  // Open settings automatically if credentials are missing (only on non-custom branch)
   const settingsSection = document.querySelector(".settings-group details");
-  if (!data.auth_token || !data.license) {
+  if ((!data.auth_token || !data.license) && currentBranch !== "custom") {
     settingsSection.open = true;
   } else {
     settingsSection.open = false;
@@ -128,15 +130,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const manifest = chrome.runtime.getManifest();
   currentVersionSpan.textContent = manifest.version;
 
-  // Always try to fetch fresh data on load if token exists
+  // Fetch API data if token exists, else use cached data if available
   if (data.auth_token) {
     fetchApiData();
   } else if (data.api_data) {
-    // Fallback to cached data if offline/no token change
+    // Fallback to cached data if offline/no token
     apiData = data.api_data;
-    showInterface();
     renderFilters();
     updateList();
+  } else {
+    // No token and no cached data: show message in installer list
+    updateListNoToken();
   }
 
   // Check for updates from GitHub
@@ -215,6 +219,14 @@ async function fetchApiData() {
 
 function showInterface() {
   appInterface.classList.remove("hidden");
+}
+
+// Show a prompt to enter token when no API data is available
+function updateListNoToken() {
+  if (currentBranch === "custom") return; // Scripts tab doesn't need token
+  installerSelect.innerHTML = '<option value="" disabled selected>⚠ Enter token in Settings to load scripts</option>';
+  previewSection.classList.add("hidden");
+  gameFilters.innerHTML = "";
 }
 
 function showToast(message, type = "") {
@@ -346,7 +358,12 @@ function toggleView(branch) {
     if (officialView) officialView.classList.remove("hidden");
     if (customScriptsView) customScriptsView.classList.add("hidden");
     if (settingsGroup) settingsGroup.classList.remove("hidden");
-    updateList();
+    // Only update list if we have data or a token; otherwise show no-token message
+    if (apiData.length > 0) {
+      updateList();
+    } else {
+      updateListNoToken();
+    }
   }
 }
 

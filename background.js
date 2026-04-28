@@ -95,12 +95,43 @@ async function updateAlwaysActiveRules() {
 
 // Handle messages from content scripts (bridge)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
+  // ── installScript: add new script (skip if name exists) ──────────
   if (request.action === "installScript") {
     const { script } = request;
     chrome.storage.local.get(["custom_scripts"], (data) => {
       let scripts = data.custom_scripts || [];
-      // Check if already exists by name
-      if (!scripts.find((s) => s.name === script.name)) {
+      if (scripts.find((s) => s.name === script.name)) {
+        sendResponse({ success: false, message: `Script "${script.name}" already exists.` });
+        return;
+      }
+      scripts.push({
+        id: Date.now().toString(),
+        name: script.name,
+        content: script.content,
+        language: script.language || "lua",
+      });
+      chrome.storage.local.set({ custom_scripts: scripts }, () => {
+        sendResponse({ success: true, message: `Script "${script.name}" installed!` });
+      });
+    });
+    return true;
+  }
+
+  // ── updateScript: update existing by name, create if not found ───
+  if (request.action === "updateScript") {
+    const { script } = request;
+    chrome.storage.local.get(["custom_scripts"], (data) => {
+      let scripts = data.custom_scripts || [];
+      const idx = scripts.findIndex((s) => s.name === script.name);
+      if (idx !== -1) {
+        scripts[idx].content = script.content;
+        scripts[idx].language = script.language || scripts[idx].language || "lua";
+        chrome.storage.local.set({ custom_scripts: scripts }, () => {
+          sendResponse({ success: true, message: `Script "${script.name}" updated!` });
+        });
+      } else {
+        // Create new if not found
         scripts.push({
           id: Date.now().toString(),
           name: script.name,
@@ -108,18 +139,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           language: script.language || "lua",
         });
         chrome.storage.local.set({ custom_scripts: scripts }, () => {
-          sendResponse({
-            success: true,
-            message: `Script "${script.name}" installed to extension!`,
-          });
-        });
-      } else {
-        sendResponse({
-          success: false,
-          message: `Script "${script.name}" is already in your extension.`,
+          sendResponse({ success: true, message: `Script "${script.name}" created!` });
         });
       }
     });
-    return true; // Keep channel open for async response
+    return true;
+  }
+
+  // ── deleteScript: remove by name ─────────────────────────────────
+  if (request.action === "deleteScript") {
+    const { name } = request;
+    chrome.storage.local.get(["custom_scripts"], (data) => {
+      let scripts = data.custom_scripts || [];
+      const before = scripts.length;
+      scripts = scripts.filter((s) => s.name !== name);
+      if (scripts.length === before) {
+        sendResponse({ success: false, message: `Script "${name}" not found.` });
+        return;
+      }
+      chrome.storage.local.set({ custom_scripts: scripts }, () => {
+        sendResponse({ success: true, message: `Script "${name}" deleted.` });
+      });
+    });
+    return true;
+  }
+
+  // ── getScripts: return all saved custom scripts ───────────────────
+  if (request.action === "getScripts") {
+    chrome.storage.local.get(["custom_scripts"], (data) => {
+      sendResponse({ success: true, scripts: data.custom_scripts || [] });
+    });
+    return true;
   }
 });
