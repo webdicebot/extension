@@ -18,6 +18,14 @@ const updateLink = document.getElementById("update-link");
 const cspToggle = document.getElementById("csp-toggle");
 const activeToggle = document.getElementById("active-toggle");
 
+// Modal Elements
+const confirmModal = document.getElementById("confirm-modal");
+const confirmTitle = document.getElementById("confirm-title");
+const confirmMessage = document.getElementById("confirm-message");
+const confirmYesBtn = document.getElementById("confirm-yes");
+const confirmNoBtn = document.getElementById("confirm-no");
+
+
 const GITHUB_REPO = "webdicebot/extension";
 
 let apiData = [];
@@ -224,7 +232,8 @@ function showInterface() {
 // Show a prompt to enter token when no API data is available
 function updateListNoToken() {
   if (currentBranch === "custom") return; // Scripts tab doesn't need token
-  installerSelect.innerHTML = '<option value="" disabled selected>⚠ Enter token in Settings to load scripts</option>';
+  installerSelect.innerHTML =
+    '<option value="" disabled selected>⚠ Enter token in Settings to load scripts</option>';
   previewSection.classList.add("hidden");
   gameFilters.innerHTML = "";
 }
@@ -241,6 +250,38 @@ function showToast(message, type = "") {
     notificationToast.classList.add("hidden");
   }, 4000);
 }
+
+function showConfirm(title, message, onConfirm) {
+  if (!confirmModal) return;
+
+  confirmTitle.textContent = title;
+  confirmMessage.textContent = message;
+  confirmModal.classList.remove("hidden");
+
+  const handleYes = () => {
+    onConfirm();
+    closeConfirm();
+  };
+
+  const handleNo = () => {
+    closeConfirm();
+  };
+
+  const closeConfirm = () => {
+    confirmModal.classList.add("hidden");
+    confirmYesBtn.removeEventListener("click", handleYes);
+    confirmNoBtn.removeEventListener("click", handleNo);
+  };
+
+  confirmYesBtn.addEventListener("click", handleYes);
+  confirmNoBtn.addEventListener("click", handleNo);
+
+  // Close on backdrop click
+  confirmModal.onclick = (e) => {
+    if (e.target === confirmModal) closeConfirm();
+  };
+}
+
 
 function renderFilters() {
   const types = ["all", ...new Set(apiData.map((item) => item.game))];
@@ -512,11 +553,17 @@ function renderScripts() {
     delBtn.className = "sm-list-btn";
     delBtn.textContent = "Del";
     delBtn.addEventListener("click", () => {
-      if (confirm(`Delete script "${script.name}"?`)) {
-        customScripts = customScripts.filter((s) => s.id !== script.id);
-        saveScripts();
-      }
+      showConfirm(
+        "Delete Script",
+        `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
+        () => {
+          customScripts = customScripts.filter((s) => s.id !== script.id);
+          saveScripts();
+          showToast("Script deleted", "success");
+        },
+      );
     });
+
 
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(delBtn);
