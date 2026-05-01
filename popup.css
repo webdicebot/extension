@@ -366,6 +366,9 @@ pre {
   overflow-y: auto;
   line-height: 1.4;
   flex: 1;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border-bottom: 1px solid rgba(0, 255, 195, 0.1);
 }
 
 /* Scrollbar */
@@ -377,6 +380,29 @@ pre::-webkit-scrollbar {
 pre::-webkit-scrollbar-thumb {
   background: var(--accent-green);
   border-radius: 2px;
+}
+
+/* Script Tips */
+.script-tips {
+  padding: 12px 12px 0 12px;
+}
+
+.tips-content {
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px dashed var(--accent-blue);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  color: var(--accent-blue);
+  line-height: 1.4;
+  display: flex;
+  gap: 8px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.tips-icon {
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5));
 }
 
 /* Buttons */

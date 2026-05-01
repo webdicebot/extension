@@ -5,6 +5,7 @@ const gameFilters = document.getElementById("game-filters");
 const installerSelect = document.getElementById("installer-select");
 const previewSection = document.getElementById("preview-section");
 const scriptPreview = document.getElementById("script-preview");
+const scriptTips = document.getElementById("script-tips");
 const injectBtn = document.getElementById("inject-now");
 const saveSettingsBtn = document.getElementById("save-settings");
 const licenseInput = document.getElementById("license");
@@ -24,7 +25,6 @@ const confirmTitle = document.getElementById("confirm-title");
 const confirmMessage = document.getElementById("confirm-message");
 const confirmYesBtn = document.getElementById("confirm-yes");
 const confirmNoBtn = document.getElementById("confirm-no");
-
 
 const GITHUB_REPO = "webdicebot/extension";
 
@@ -282,7 +282,6 @@ function showConfirm(title, message, onConfirm) {
   };
 }
 
-
 function renderFilters() {
   const types = ["all", ...new Set(apiData.map((item) => item.game))];
   gameFilters.innerHTML = "";
@@ -372,6 +371,14 @@ const CASINO_GAME = "${item.CASINO_GAME}";
 localStorage.setItem("license", "${license}");`;
 
   scriptPreview.textContent = code;
+  
+  if (item.tips) {
+    scriptTips.innerHTML = `<div class="tips-content"><span class="tips-icon">💡</span> ${item.tips}</div>`;
+    scriptTips.classList.remove("hidden");
+  } else {
+    scriptTips.classList.add("hidden");
+  }
+
   previewSection.classList.remove("hidden");
 }
 
@@ -563,7 +570,6 @@ function renderScripts() {
         },
       );
     });
-
 
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(delBtn);
