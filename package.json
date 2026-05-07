@@ -1,0 +1,14 @@
+{
+  "name": "extension",
+  "version": "1.0.9",
+  "description": "Quick install Web DiceBot and more!",
+  "scripts": {
+    "format": "prettier --write \"./**/*.{js,json,css,html}\"",
+    "lint": "eslint . --fix"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.0.0"
+  }
+}
