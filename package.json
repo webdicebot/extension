@@ -4,7 +4,8 @@
   "description": "Quick install Web DiceBot and more!",
   "scripts": {
     "format": "prettier --write \"./**/*.{js,json,css,html}\"",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "build": "node build.js"
   },
   "devDependencies": {
     "eslint": "^9.0.0",
