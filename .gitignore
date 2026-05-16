@@ -25,3 +25,7 @@ build/
 .idea/
 *.swp
 *.swo
+
+.agent
+GEMINI.md
+ERRORS.md
