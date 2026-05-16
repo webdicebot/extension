@@ -578,107 +578,30 @@ footer {
   padding: 0 12px 12px 12px;
 }
 
-.sm-actions {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.sm-actions .btn-secondary {
-  padding: 6px 10px;
-  font-size: 0.7rem;
-}
-
-.sm-list {
-  list-style: none;
-  margin-bottom: 12px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.sm-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 8px 10px;
-  border: 1px solid var(--glass-border);
+.sm-info-banner {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 6px;
-  margin-bottom: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.4;
 }
 
-.sm-list-name {
-  font-size: 0.8rem;
-  color: #fff;
-  cursor: pointer;
-  flex: 1;
-}
-
-.sm-list-name:hover {
+.sm-info-banner a {
   color: var(--accent-blue);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.sm-info-banner a:hover {
   text-decoration: underline;
 }
 
-.sm-list-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.sm-list-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 2px 4px;
-}
-
-.sm-list-btn:hover {
-  color: var(--accent-orange);
-}
-
-.sm-editor {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid var(--glass-border);
-}
-
-.sm-editor textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  color: #a5f3e0;
-  padding: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  resize: vertical;
-  min-height: 100px;
-}
-
-.sm-editor textarea:focus {
-  outline: none;
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
-}
-
-.sm-editor-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.sm-list li.dragging {
-  opacity: 0.5;
-  border: 1px dashed var(--accent-blue);
-  background: rgba(0, 229, 255, 0.1);
-}
-.sm-list li {
-  cursor: grab;
-}
-.sm-list li:active {
-  cursor: grabbing;
+.sm-container {
+  padding: 0 12px 12px 12px;
 }
 
 /* Modal Styling */

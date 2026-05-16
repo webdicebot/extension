@@ -74,34 +74,19 @@
 
           <div id="custom-scripts-view" class="hidden">
             <div class="sm-container">
-              <div class="sm-actions">
-                <button id="sm-add" class="btn-secondary">New</button>
-                <button id="sm-import" class="btn-secondary">Import</button>
-                <button id="sm-export" class="btn-secondary">Export</button>
-                <input type="file" id="sm-file-input" accept=".json" hidden />
+              <div class="sm-info-banner">
+                <span
+                  >Manage scripts on
+                  <a href="https://webdicebot.net/#/my-scripts" target="_blank">Dashboard</a></span
+                >
               </div>
-              <ul id="sm-list" class="sm-list"></ul>
-              <div id="sm-editor" class="sm-editor hidden">
-                <div class="input-field">
-                  <input type="text" id="sm-name" placeholder="Script Title" />
-                </div>
-                <div class="input-field">
-                  <select id="sm-language">
-                    <option value="lua">Lua</option>
-                    <option value="javascript">JavaScript</option>
-                  </select>
-                </div>
-                <div class="input-field">
-                  <textarea
-                    id="sm-content"
-                    placeholder="Paste your script content here"
-                    rows="5"
-                  ></textarea>
-                </div>
-                <div class="sm-editor-actions">
-                  <button id="sm-save" class="btn-primary">Save</button>
-                  <button id="sm-cancel" class="btn-secondary">Cancel</button>
-                </div>
+              <div class="selector-section">
+                <select id="sm-select">
+                  <option value="">Select a script</option>
+                </select>
+              </div>
+              <div class="action-buttons">
+                <button id="sm-paste" class="btn-primary">Paste to bot</button>
               </div>
             </div>
           </div>
@@ -138,22 +123,6 @@
       <footer>
         <div class="version-info">Version <span id="current-version">1.0.0</span></div>
       </footer>
-    </div>
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm-modal" class="modal-overlay hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span class="modal-icon">⚠</span>
-          <h3 id="confirm-title">Confirm Action</h3>
-        </div>
-        <div class="modal-body">
-          <p id="confirm-message">Are you sure you want to proceed?</p>
-        </div>
-        <div class="modal-footer">
-          <button id="confirm-yes" class="btn-confirm-yes">Confirm</button>
-          <button id="confirm-no" class="btn-confirm-no">Cancel</button>
-        </div>
-      </div>
     </div>
 
     <script src="popup.js"></script>
