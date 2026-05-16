@@ -209,8 +209,54 @@ async function fetchApiData() {
       renderFilters()
       updateList()
     }
+
+    // Also fetch custom scripts from cloud
+    fetchCustomScripts(token)
   } catch (err) {
     console.error('[Web DiceBot] Fetch failed:', err)
+  }
+}
+
+async function fetchCustomScripts(token) {
+  if (!token) return
+
+  try {
+    const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+
+    // 1. Kiểm tra xem có script local nào chưa được upload không
+    const localScripts = customScripts.filter((s) => s.id && s.id.length < 15)
+    if (localScripts.length > 0) {
+      console.log('[Web DiceBot] Found local scripts to migrate:', localScripts.length)
+      for (const script of localScripts) {
+        await syncScriptToCloud(script.id)
+      }
+    }
+
+    // 2. Sau khi đã đẩy hết lên (nếu có), mới lấy danh sách chuẩn từ Cloud về
+    const resp = await fetch(`${apiBase}/scripts`, {
+      headers: { authorization: `Bearer ${token}` }
+    })
+
+    if (resp.ok) {
+      const res = await resp.json()
+      if (res.success && Array.isArray(res.data)) {
+        // Nếu trên Cloud có dữ liệu, hoặc nếu chúng ta muốn tin tưởng Cloud tuyệt đối
+        // Ta map lại danh sách
+        const cloudScripts = res.data.map((s) => ({
+          id: s._id,
+          name: s.name,
+          content: s.content,
+          language: s.language || 'lua'
+        }))
+
+        // Cập nhật lại customScripts và lưu local
+        customScripts = cloudScripts
+        await chrome.storage.local.set({ custom_scripts: customScripts })
+        renderScripts()
+      }
+    }
+  } catch (err) {
+    console.error('[Web DiceBot] Fetch/Sync custom scripts failed:', err)
   }
 }
 
@@ -550,9 +596,20 @@ function renderScripts() {
         'Delete Script',
         `Are you sure you want to delete "${script.name}"? This action cannot be undone.`,
         () => {
+          const scriptIdToDelete = script.id
           customScripts = customScripts.filter((s) => s.id !== script.id)
           saveScripts()
           showToast('Script deleted', 'success')
+
+          // Sync delete to cloud
+          const token = authTokenInput.value.trim()
+          if (token && scriptIdToDelete.length > 15) {
+            const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+            fetch(`${apiBase}/scripts/${scriptIdToDelete}`, {
+              method: 'DELETE',
+              headers: { authorization: `Bearer ${token}` }
+            }).catch((err) => console.error('[Web DiceBot] Cloud delete failed:', err))
+          }
         }
       )
     })
@@ -658,7 +715,58 @@ if (smSaveBtn) {
     saveScripts()
     closeEditor()
     showToast('Script saved')
+
+    // Proactively sync to cloud if token exists
+    const token = authTokenInput.value.trim()
+    if (token) {
+      syncScriptToCloud(editingScriptId || customScripts[customScripts.length - 1].id)
+    }
   })
+}
+
+async function syncScriptToCloud(scriptId) {
+  const token = authTokenInput.value.trim()
+  if (!token) return
+
+  const script = customScripts.find((s) => s.id === scriptId)
+  if (!script) return
+
+  try {
+    const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+    const isNew = !scriptId.includes('-') && scriptId.length > 15 // Check if it's a MongoDB ID
+
+    // This is a simplified sync. Ideally, we distinguish between NEW and EDIT.
+    // For now, if we saved it locally, we try to push it to cloud.
+    // If it's a local-only ID (like Date.now()), it's NEW.
+    const isLocalId = script.id.length < 15
+
+    const method = isLocalId ? 'POST' : 'PUT'
+    const url = isLocalId ? `${apiBase}/scripts` : `${apiBase}/scripts/${script.id}`
+
+    const resp = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: script.name,
+        content: script.content,
+        language: script.language
+      })
+    })
+
+    if (resp.ok) {
+      const res = await resp.json()
+      if (res.success && isLocalId) {
+        // Update local ID with MongoDB ID from cloud
+        script.id = res.data._id
+        await saveScripts()
+      }
+    }
+  } catch (err) {
+    console.error('[Web DiceBot] Sync to cloud failed:', err)
+  }
 }
 
 if (smExportBtn) {
