@@ -191,7 +191,7 @@ async function fetchApiData() {
     let allData = []
 
     for (const b of branches) {
-      const resp = await fetch(`https://api.webdicebot.net/installer/branch/${b}`, {
+      const resp = await fetch(`https://bot.webdicebot.net/installer/branch/${b}`, {
         headers: { authorization: `Bearer ${token}` }
       })
       if (resp.ok) {
@@ -221,7 +221,7 @@ async function fetchCustomScripts(token) {
   if (!token) return
 
   try {
-    const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+    const apiBase = 'https://api.webdicebot.net'
 
     // 1. Kiểm tra xem có script local nào chưa được upload không
     const localScripts = customScripts.filter((s) => s.id && s.id.length < 15)
@@ -604,7 +604,7 @@ function renderScripts() {
           // Sync delete to cloud
           const token = authTokenInput.value.trim()
           if (token && scriptIdToDelete.length > 15) {
-            const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+            const apiBase = 'https://api.webdicebot.net'
             fetch(`${apiBase}/scripts/${scriptIdToDelete}`, {
               method: 'DELETE',
               headers: { authorization: `Bearer ${token}` }
@@ -732,7 +732,7 @@ async function syncScriptToCloud(scriptId) {
   if (!script) return
 
   try {
-    const apiBase = wdbApiInput.value || 'https://bot.webdicebot.net'
+    const apiBase = 'https://api.webdicebot.net'
     const isNew = !scriptId.includes('-') && scriptId.length > 15 // Check if it's a MongoDB ID
 
     // This is a simplified sync. Ideally, we distinguish between NEW and EDIT.
