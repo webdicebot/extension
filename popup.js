@@ -191,7 +191,7 @@ async function fetchApiData() {
     let allData = []
 
     for (const b of branches) {
-      const resp = await fetch(`https://bot.webdicebot.net/installer/branch/${b}`, {
+      const resp = await fetch(`https://api.webdicebot.net/installer/branch/${b}`, {
         headers: { authorization: `Bearer ${token}` }
       })
       if (resp.ok) {
