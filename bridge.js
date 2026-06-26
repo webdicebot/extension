@@ -103,6 +103,14 @@
   // ─── Event: WDB_RUN_SCRIPT ──────────────────────────────────────
   // Load a saved script (by name) into the active bot editor.
   // Dispatch: new CustomEvent("WDB_RUN_SCRIPT", { detail: { name } })
+  document.addEventListener('WDB_GET_DEVICE_ID', () => {
+    console.log(`${BRIDGE_NAME} WDB_GET_DEVICE_ID`)
+
+    sendToBackground({ action: 'getDeviceId' }, (res) =>
+      dispatch('WDB_GET_DEVICE_ID_RESULT', res)
+    )
+  })
+
   document.addEventListener('WDB_RUN_SCRIPT', (e) => {
     if (!e.detail) return
     const { name } = e.detail

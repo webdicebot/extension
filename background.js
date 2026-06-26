@@ -87,6 +87,24 @@ async function updateAlwaysActiveRules() {
 
 // Handle messages from content scripts (bridge)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'getDeviceId') {
+    chrome.storage.local.get(['wdb_device_id'], (data) => {
+      let deviceId = data.wdb_device_id
+      if (!deviceId) {
+        deviceId =
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `wdb-${Date.now()}-${Math.random().toString(16).slice(2)}`
+        chrome.storage.local.set({ wdb_device_id: deviceId }, () => {
+          sendResponse({ success: true, deviceId })
+        })
+        return
+      }
+      sendResponse({ success: true, deviceId })
+    })
+    return true
+  }
+
   // ── installScript: add new script (skip if name exists) ──────────
   if (request.action === 'installScript') {
     const { script } = request
